@@ -5,7 +5,7 @@ import React from "react";
 
 export default function HeaderComp() {
   return (
-    <header className="border-b fixed w-full top-0 border-gray-200 bg-white/40 backdrop-blur-md">
+    <header className="border-b z-40 fixed w-full top-0 border-gray-200 bg-white/40 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between h-14 px-4">
         <div className="flex items-center space-x-6">
           <Link href="/" className="flex items-center">
