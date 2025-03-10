@@ -1,4 +1,5 @@
 "use server";
+
 import { Card } from "@prisma/client";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
