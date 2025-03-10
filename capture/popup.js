@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Function to send data to API using async/await
   async function sendToAPI(data) {
     // Replace with your actual API endpoint
-    const apiUrl = "http://localhost:3000/api/products";
+    const apiUrl = "https://stacklist.vercel.app";
 
     const response = await fetch(apiUrl, {
       method: "POST",
