@@ -1,9 +1,8 @@
 "use client";
 
+import type React from "react";
+
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,175 +13,115 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-// import { ImageUpload } from "@/components/ui/image-upload"
-import { PlusCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
-const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  notes: z.string().min(1, "Notes are required"),
-  image: z.string().optional(),
-  categoryId: z.string().optional(),
-});
-
-type StackFormValues = z.infer<typeof formSchema>;
-
-interface Category {
-  id: string;
+export type StackProps = {
   title: string;
-}
+  notes: string;
+};
 
-interface StackDialogProps {
-  initialData?: (StackFormValues & { id: string }) | null;
-  categories: Category[];
-  onSubmit: (data: StackFormValues) => void;
-  buttonLabel?: string;
-}
-
-export function StackDialog({
-  initialData,
-  categories,
-  onSubmit,
-  buttonLabel = "Add Stack",
-}: StackDialogProps) {
+export default function StackDialog() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<StackProps>();
 
-  const form = useForm<StackFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      title: "",
-      notes: "",
-      image: "",
-      categoryId: "",
-    },
-  });
-
-  const handleSubmit = async (data: StackFormValues) => {
-    await onSubmit(data);
-    setOpen(false);
-    form.reset();
-  };
-
-  const title = initialData ? "Edit Stack" : "Create Stack";
-  const description = initialData
-    ? "Edit your stack details"
-    : "Add a new stack to your collection";
-  const action = initialData ? "Save changes" : "Create";
+  async function submit(data: StackProps) {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/stacks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.status === 201) {
+        toast.success("Stack created successfully");
+        setLoading(false);
+        reset();
+        setOpen(false);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong.");
+      setLoading(false);
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {buttonLabel}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter stack title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter stack notes"
-                      {...field}
-                      className="resize-none min-h-[100px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value ? [field.value] : []}
-                      onChange={(url) => field.onChange(url)}
-                      onRemove={() => field.onChange("")}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <div className="">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline">Add New Stack</Button>
+        </DialogTrigger>
+        <DialogContent className="bg-gray-900 text-white border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">Create New Item</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Add the details for your new item here.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(submit)}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="title" className="text-white">
+                  Title
+                </Label>
+                <Input
+                  id="title"
+                  className="bg-gray-800 border-gray-700 text-white"
+                  placeholder="Enter title"
+                  {...register("title", { required: true })}
+                />
+                {errors["title"] && (
+                  <span className="text-red-500 text-xs">Field required</span>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="notes" className="text-white">
+                  Notes
+                </Label>
+                <Textarea
+                  id="notes"
+                  className="bg-gray-800 border-gray-700 text-white min-h-[120px]"
+                  placeholder="Enter your notes here"
+                  {...register("notes", { required: true })}
+                />
+                {errors["notes"] && (
+                  <span className="text-red-500 text-xs">Field required</span>
+                )}
+              </div>
+            </div>
             <DialogFooter>
-              <Button type="submit">{action}</Button>
+              <Button
+                disabled={loading}
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                className="bg-transparent border-gray-700 text-white hover:bg-gray-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={loading}
+                type="submit"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {loading ? "Saving..." : "Save"}
+              </Button>
             </DialogFooter>
           </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import {ExternalLink} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,22 +10,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EditDialog } from "./dialogs/edit-dialog";
+import { Stack } from "@prisma/client";
+import DeleteDialog from "./dialogs/delete-dialog";
 
 interface CardItemProps {
+  id: string;
   url: string;
   title: string;
   price: string;
   imageUrl?: string | null;
   createdAt: Date;
   userId?: string | null;
+  stacks: Stack[];
 }
 
 export function CardItem({
+  id,
   url,
   title,
   price,
   imageUrl,
   createdAt,
+  stacks,
 }: CardItemProps) {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
@@ -61,6 +68,11 @@ export function CardItem({
         >
           Visit <ExternalLink className="h-3 w-3" />
         </Link>
+      </CardFooter>
+
+      <CardFooter className="flex items-center justify-between">
+        <EditDialog stacks={stacks} id={id} />
+        <DeleteDialog id={id} />
       </CardFooter>
     </Card>
   );

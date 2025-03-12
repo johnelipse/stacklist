@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ExternalLink } from "lucide-react";
 import { CardDialog } from "./dialogs/card-dialog";
-import { Card } from "@prisma/client";
+import { Card, Stack } from "@prisma/client";
 import { CardItem } from "./card-item";
 
 export const metadata: Metadata = {
@@ -10,8 +10,14 @@ export const metadata: Metadata = {
     "Add your favorite cards, store, share, and stack them later for easy access.",
 };
 
-export default function Home({ products }: { products: Card[] }) {
-  if (!products) {
+export default function Home({
+  products,
+  stacks,
+}: {
+  products: Card[];
+  stacks: Stack[];
+}) {
+  if (products.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-white">
         {/* Main Content */}
@@ -58,13 +64,13 @@ export default function Home({ products }: { products: Card[] }) {
     );
   }
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex flex-col bg-white">
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-12 flex items-center justify-center">
+      <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
         <div className="max-w-3xl mx-auto text-center">
           <div className="grid grid-cols-3 gap-4 mb-6">
             {products.map((product) => {
-              return <CardItem key={product.id} {...product} />;
+              return <CardItem key={product.id} {...product} stacks={stacks} />;
             })}
           </div>
         </div>
